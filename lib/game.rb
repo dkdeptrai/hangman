@@ -59,29 +59,33 @@ class Game
     puts @clues.join('')
   end
 
-  def handle_input(input)
+  def check_char(input)
     chars = @word.split('')
+    if !check_guess(chars, input).empty?
+      @right_guesses.push(input)
+    else
+      @wrong_guesses.push(input)
+      @chances -= 1
+    end
+  end
+
+  def handle_input(input)
     case input
     when 'save'
       save_game
     when 'load'
       load_game
     else
-      if check_guess(chars, input)
-        @right_guesses.push(input)
-      else
-        @wrong_guesses.push(input)
-        @chances -= 1
-      end
+      check_char(input)
     end
   end
 
   def player_input
     character = ''
     loop do
-      puts "Enter a character please:\n"
+      puts "Enter a character please (type 'save' if you want to save current game or 'load' if you want to load a saved game):\n"
       character = gets.chomp
-      break if [ 'save', 'load' ].include?(character)
+      break if ['save', 'load'].include?(character)
       break unless @right_guesses.include?(character) || @wrong_guesses.include?(character) || character.length > 1
 
       puts 'You have already tried this character' if @wrong_guesses.include?(character)
@@ -106,14 +110,13 @@ class Game
   end
 
   def game_play
-    
     until @chances.zero?
       break if check_win
+
       input = player_input
       handle_input(input)
       display_guesses
       puts 'Only one try left, be careful with your next choice' if @chances == 1
-      puts check_win
     end
     puts check_win ? 'Congratulations, you win' : "You lose, the answer is #{@word}"
   end
